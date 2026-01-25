@@ -327,6 +327,15 @@ h1 {
     color: #c9d1d9;
     font-size: 14px;
     transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.form-group input[type="time"] {
+    color-scheme: dark;
+}
+
+.form-group input::placeholder {
+    color: #484f58;
 }
 
 .form-group input:focus,
@@ -334,6 +343,7 @@ h1 {
     outline: none;
     border-color: #58a6ff;
     background: #161b22;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
 .form-group input[type="checkbox"] {
@@ -349,6 +359,22 @@ h1 {
     align-items: center;
     cursor: pointer;
     font-weight: 400;
+    padding: 12px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    margin-bottom: 0;
+}
+
+.form-group label:has(input[type="checkbox"]):hover {
+    background: #1c2128;
+    border-color: #30363d;
+}
+
+.form-group label:has(input[type="checkbox"]:checked) {
+    background: rgba(35, 134, 54, 0.1);
+    border-color: #238636;
 }
 
 .days-selector {
@@ -371,11 +397,17 @@ h1 {
     border-radius: 6px;
     transition: all 0.15s ease;
     font-size: 13px;
+    margin-bottom: 0;
 }
 
 .days-selector label:hover {
     background: #1c2128;
     border-color: #30363d;
+}
+
+.days-selector label:has(input[type="checkbox"]:checked) {
+    background: rgba(35, 134, 54, 0.15);
+    border-color: #238636;
 }
 
 .days-selector input[type="checkbox"]:checked + span {
@@ -392,8 +424,29 @@ h1 {
     border-top: 1px solid #21262d;
 }
 
+.form-actions button {
+    flex: 1;
+    max-width: 150px;
+}
+
 .hidden {
     display: none !important;
+}
+
+/* Анимация появления скрытых полей */
+.form-group:not(.hidden) {
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Config Info */
