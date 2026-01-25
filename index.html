@@ -11,15 +11,16 @@
         <header>
             <h1>Расписание</h1>
             <div class="header-buttons">
-                <button id="configBtn" class="btn-secondary">⚙️</button>
-                <button id="addTaskBtn" class="btn-primary">+ Добавить задачу</button>
+                <button id="configBtn" class="btn-secondary" title="Настройки">⚙️</button>
+                <button id="addTaskBtn" class="btn-primary" title="Добавить задачу (Ctrl+N)">+ Добавить задачу</button>
             </div>
         </header>
 
         <div class="date-navigation">
-            <button id="prevDay" class="btn-nav">‹</button>
+            <button id="prevDay" class="btn-nav" title="Предыдущий день (←)">‹</button>
+            <button id="todayBtn" class="btn-today" title="Вернуться к сегодня (T)">Сегодня</button>
             <span id="currentDate"></span>
-            <button id="nextDay" class="btn-nav">›</button>
+            <button id="nextDay" class="btn-nav" title="Следующий день (→)">›</button>
         </div>
 
         <div class="tasks-container">
@@ -29,7 +30,7 @@
         <!-- Модальное окно для настроек -->
         <div id="configModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <span class="close" id="configClose">&times;</span>
                 <h2>Настройки синхронизации</h2>
                 
                 <div class="config-info">
@@ -63,7 +64,7 @@
         <!-- Модальное окно для добавления задач -->
         <div id="taskModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <span class="close" id="taskClose">&times;</span>
                 <h2>Добавить задачу</h2>
                 
                 <form id="taskForm">
