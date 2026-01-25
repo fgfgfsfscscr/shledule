@@ -198,15 +198,18 @@ class ScheduleApp {
 
         tasksList.innerHTML = todayTasks.map(task => this.renderTask(task)).join('');
 
-        // Привязка событий для чекбоксов и кнопок удаления
+        // Привязка событий для чекбоксов
         tasksList.querySelectorAll('.task-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', async (e) => {
                 await this.toggleTaskCompletion(parseInt(e.target.dataset.taskId));
             });
         });
 
+        // Привязка событий для кнопок удаления
         tasksList.querySelectorAll('.task-delete').forEach(button => {
             button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 await this.deleteTask(parseInt(e.target.dataset.taskId));
             });
         });
