@@ -33,10 +33,43 @@ class ScheduleApp {
             this.renderTasks();
         });
 
+        document.getElementById('todayBtn').addEventListener('click', () => {
+            this.currentDate = new Date();
+            this.updateDateDisplay();
+            this.renderTasks();
+        });
+
+        // Горячие клавиши
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + N - новая задача
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                document.getElementById('taskModal').style.display = 'block';
+            }
+            // Стрелка влево - предыдущий день
+            if (e.key === 'ArrowLeft' && !this.isModalOpen()) {
+                this.currentDate.setDate(this.currentDate.getDate() - 1);
+                this.updateDateDisplay();
+                this.renderTasks();
+            }
+            // Стрелка вправо - следующий день
+            if (e.key === 'ArrowRight' && !this.isModalOpen()) {
+                this.currentDate.setDate(this.currentDate.getDate() + 1);
+                this.updateDateDisplay();
+                this.renderTasks();
+            }
+            // T - вернуться к сегодня
+            if (e.key === 't' && !this.isModalOpen()) {
+                this.currentDate = new Date();
+                this.updateDateDisplay();
+                this.renderTasks();
+            }
+        });
+
         // Модальное окно задач
         const modal = document.getElementById('taskModal');
         const addBtn = document.getElementById('addTaskBtn');
-        const closeBtn = document.querySelector('.close');
+        const closeBtn = document.getElementById('taskClose');
         const cancelBtn = document.getElementById('cancelBtn');
 
         addBtn.addEventListener('click', () => {
@@ -56,7 +89,7 @@ class ScheduleApp {
         // Модальное окно настроек
         const configModal = document.getElementById('configModal');
         const configBtn = document.getElementById('configBtn');
-        const configClose = document.querySelector('#configModal .close');
+        const configClose = document.getElementById('configClose');
         const configCancel = document.getElementById('configCancelBtn');
 
         configBtn.addEventListener('click', () => {
@@ -198,20 +231,32 @@ class ScheduleApp {
 
         tasksList.innerHTML = todayTasks.map(task => this.renderTask(task)).join('');
 
-        // Привязка событий для чекбоксов
-        tasksList.querySelectorAll('.task-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', async (e) => {
-                await this.toggleTaskCompletion(parseInt(e.target.dataset.taskId));
-            });
-        });
+        // Используем делегирование событий для динамических элементов
+        this.attachTaskEvents();
+    }
 
-        // Привязка событий для кнопок удаления
-        tasksList.querySelectorAll('.task-delete').forEach(button => {
-            button.addEventListener('click', async (e) => {
+    attachTaskEvents() {
+        const tasksList = document.getElementById('tasksList');
+        
+        // Удаляем старые обработчики если есть
+        const oldTasksList = tasksList.cloneNode(true);
+        tasksList.parentNode.replaceChild(oldTasksList, tasksList);
+        
+        // Добавляем новые обработчики через делегирование
+        document.getElementById('tasksList').addEventListener('click', async (e) => {
+            // Обработка чекбокса
+            if (e.target.classList.contains('task-checkbox')) {
+                const taskId = parseInt(e.target.dataset.taskId);
+                await this.toggleTaskCompletion(taskId);
+            }
+            
+            // Обработка кнопки удаления
+            if (e.target.classList.contains('task-delete')) {
                 e.preventDefault();
                 e.stopPropagation();
-                await this.deleteTask(parseInt(e.target.dataset.taskId));
-            });
+                const taskId = parseInt(e.target.dataset.taskId);
+                await this.deleteTask(taskId);
+            }
         });
     }
 
@@ -256,8 +301,10 @@ class ScheduleApp {
 
         return this.tasks.filter(task => {
             if (task.isRecurring) {
-                // Повторяющаяся задача - проверяем дни недели
-                return task.days && task.days.includes(dayOfWeek);
+                // Повторяющаяся задача - проверяем дни недели и исключения
+                const isOnThisDay = task.days && task.days.includes(dayOfWeek);
+                const isExcluded = task.excludedDates && task.excludedDates.includes(dateKey);
+                return isOnThisDay && !isExcluded;
             } else {
                 // Обычная задача - проверяем дату
                 return task.date === dateKey;
@@ -277,11 +324,67 @@ class ScheduleApp {
     }
 
     async deleteTask(taskId) {
-        if (confirm('Удалить эту задачу?')) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Если задача повторяющаяся, предлагаем выбор
+        if (task.isRecurring) {
+            const choice = await this.showDeleteChoice();
+            
+            if (choice === 'cancel') return;
+            
+            if (choice === 'this') {
+                // Удаляем только это событие - добавляем дату в исключения
+                const dateKey = this.formatDate(this.currentDate);
+                if (!task.excludedDates) {
+                    task.excludedDates = [];
+                }
+                task.excludedDates.push(dateKey);
+            } else if (choice === 'all') {
+                // Удаляем всю повторяющуюся задачу
+                this.tasks = this.tasks.filter(t => t.id !== taskId);
+            }
+        } else {
+            // Обычная задача - просто удаляем
+            if (!confirm('Удалить эту задачу?')) return;
             this.tasks = this.tasks.filter(t => t.id !== taskId);
-            await this.saveTasksToGitHub();
-            this.renderTasks();
         }
+
+        await this.saveTasksToGitHub();
+        this.renderTasks();
+    }
+
+    showDeleteChoice() {
+        return new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <h2 style="margin-bottom: 20px;">Удалить задачу</h2>
+                    <p style="margin-bottom: 24px; color: #8b949e;">Это повторяющаяся задача. Что вы хотите удалить?</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn-primary" id="deleteThis">Только это событие</button>
+                        <button class="btn-secondary" id="deleteAll" style="background: #da3633; color: white; border: none;">Все повторения</button>
+                        <button class="btn-secondary" id="deleteCancel">Отмена</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const cleanup = (choice) => {
+                modal.remove();
+                resolve(choice);
+            };
+            
+            modal.querySelector('#deleteThis').addEventListener('click', () => cleanup('this'));
+            modal.querySelector('#deleteAll').addEventListener('click', () => cleanup('all'));
+            modal.querySelector('#deleteCancel').addEventListener('click', () => cleanup('cancel'));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) cleanup('cancel');
+            });
+        });
     }
 
     formatDate(date) {
@@ -302,7 +405,11 @@ class ScheduleApp {
 
             if (response.ok) {
                 const data = await response.json();
-                const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                // Декодируем base64 и парсим JSON
+                const jsonString = new TextDecoder().decode(
+                    Uint8Array.from(atob(data.content), c => c.charCodeAt(0))
+                );
+                const content = JSON.parse(jsonString);
                 this.tasks = content.tasks || [];
                 this.fileSha = data.sha;
             } else if (response.status === 404) {
@@ -323,10 +430,14 @@ class ScheduleApp {
         if (!this.config.token || !this.config.repo) return;
 
         try {
-            const content = btoa(unescape(encodeURIComponent(JSON.stringify({
+            // Кодируем JSON в base64
+            const jsonString = JSON.stringify({
                 tasks: this.tasks,
                 lastUpdated: new Date().toISOString()
-            }))));
+            });
+            const bytes = new TextEncoder().encode(jsonString);
+            const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join('');
+            const content = btoa(binString);
 
             const body = {
                 message: 'Обновление расписания',
@@ -412,6 +523,78 @@ class ScheduleApp {
         setTimeout(() => {
             errorDiv.remove();
         }, 5000);
+    }
+
+    isModalOpen() {
+        const modals = document.querySelectorAll('.modal');
+        return Array.from(modals).some(modal => modal.style.display === 'block');
+    }
+
+    // Дополнительные полезные функции
+    
+    // Получить статистику задач
+    getTaskStats() {
+        const today = this.formatDate(new Date());
+        const todayTasks = this.getTasksForDate(new Date());
+        const completed = todayTasks.filter(task => task.completed[today]).length;
+        
+        return {
+            total: this.tasks.length,
+            today: todayTasks.length,
+            completed: completed,
+            pending: todayTasks.length - completed
+        };
+    }
+
+    // Экспорт задач в JSON
+    exportTasks() {
+        const dataStr = JSON.stringify(this.tasks, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `schedule-backup-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Импорт задач из JSON
+    async importTasks(file) {
+        try {
+            const text = await file.text();
+            const importedTasks = JSON.parse(text);
+            
+            if (confirm(`Импортировать ${importedTasks.length} задач? Это добавит их к существующим.`)) {
+                this.tasks = [...this.tasks, ...importedTasks];
+                await this.saveTasksToGitHub();
+                this.renderTasks();
+                this.showSuccess('Задачи успешно импортированы');
+            }
+        } catch (error) {
+            this.showError('Ошибка импорта: ' + error.message);
+        }
+    }
+
+    showSuccess(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message';
+        successDiv.textContent = message;
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #238636;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            z-index: 1001;
+        `;
+        
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
     }
 
     loadTasks() {
