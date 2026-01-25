@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Расписание</h1>
+            <div class="header-buttons">
+                <button id="configBtn" class="btn-secondary">⚙️</button>
+                <button id="addTaskBtn" class="btn-primary">+ Добавить задачу</button>
+            </div>
+        </header>
+
+        <div class="date-navigation">
+            <button id="prevDay" class="btn-nav">‹</button>
+            <span id="currentDate"></span>
+            <button id="nextDay" class="btn-nav">›</button>
+        </div>
+
+        <div class="tasks-container">
+            <div id="tasksList"></div>
+        </div>
+
+        <!-- Модальное окно для настроек -->
+        <div id="configModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Настройки синхронизации</h2>
+                
+                <div class="config-info">
+                    <p>Для синхронизации между устройствами нужен GitHub токен и репозиторий:</p>
+                    <ol>
+                        <li>Создайте <strong>приватный</strong> репозиторий на GitHub</li>
+                        <li>Создайте Personal Access Token в GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)</li>
+                        <li>Дайте токену права: <code>repo</code> (полный доступ к репозиториям)</li>
+                    </ol>
+                </div>
+                
+                <form id="configForm">
+                    <div class="form-group">
+                        <label for="githubToken">GitHub Token:</label>
+                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="githubRepo">Репозиторий:</label>
+                        <input type="text" id="githubRepo" placeholder="username/repository-name" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Сохранить</button>
+                        <button type="button" id="configCancelBtn" class="btn-secondary">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно для добавления задач -->
+        <div id="taskModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Добавить задачу</h2>
+                
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Название задачи:</label>
+                        <input type="text" id="taskTitle" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskType">Тип задачи:</label>
+                        <select id="taskType">
+                            <option value="single">Разовая</option>
+                            <option value="period">С периодом времени</option>
+                            <option value="recurring">Повторяющаяся</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="timeGroup">
+                        <label for="taskTime">Время:</label>
+                        <input type="time" id="taskTime">
+                    </div>
+
+                    <div class="form-group hidden" id="periodGroup">
+                        <label for="startTime">Время начала:</label>
+                        <input type="time" id="startTime">
+                        <label for="endTime">Время окончания:</label>
+                        <input type="time" id="endTime">
+                    </div>
+
+                    <div class="form-group hidden" id="recurringGroup">
+                        <label>Дни недели:</label>
+                        <div class="days-selector">
+                            <label><input type="checkbox" value="1"> Пн</label>
+                            <label><input type="checkbox" value="2"> Вт</label>
+                            <label><input type="checkbox" value="3"> Ср</label>
+                            <label><input type="checkbox" value="4"> Чт</label>
+                            <label><input type="checkbox" value="5"> Пт</label>
+                            <label><input type="checkbox" value="6"> Сб</label>
+                            <label><input type="checkbox" value="0"> Вс</label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Добавить</button>
+                        <button type="button" id="cancelBtn" class="btn-secondary">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
