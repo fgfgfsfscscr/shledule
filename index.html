@@ -16,15 +16,48 @@
             </div>
         </header>
 
-        <div class="date-navigation">
-            <button id="prevDay" class="btn-nav" title="Предыдущий день (←)">‹</button>
-            <button id="todayBtn" class="btn-today" title="Вернуться к сегодня (T)">Сегодня</button>
-            <span id="currentDate"></span>
-            <button id="nextDay" class="btn-nav" title="Следующий день (→)">›</button>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="schedule">📅 Расписание</button>
+            <button class="tab-btn" data-tab="habits">✓ Привычки</button>
+            <button class="tab-btn" data-tab="backlog">📝 Задачи</button>
         </div>
 
-        <div class="tasks-container">
-            <div id="tasksList"></div>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="schedule">📅 Расписание</button>
+            <button class="tab-btn" data-tab="habits">✓ Привычки</button>
+            <button class="tab-btn" data-tab="backlog">📝 Задачи</button>
+        </div>
+
+        <!-- Вкладка Расписание -->
+        <div class="tab-content active" id="schedule-tab">
+            <div class="date-navigation">
+                <button id="prevDay" class="btn-nav" title="Предыдущий день (←)">‹</button>
+                <button id="todayBtn" class="btn-today" title="Вернуться к сегодня (T)">Сегодня</button>
+                <span id="currentDate"></span>
+                <button id="nextDay" class="btn-nav" title="Следующий день (→)">›</button>
+            </div>
+
+            <div class="tasks-container">
+                <div id="tasksList"></div>
+            </div>
+        </div>
+
+        <!-- Вкладка Привычки -->
+        <div class="tab-content" id="habits-tab">
+            <div class="habits-header">
+                <h2>Трекер привычек</h2>
+                <button id="addHabitBtn" class="btn-primary">+ Добавить привычку</button>
+            </div>
+            <div id="habitsList"></div>
+        </div>
+
+        <!-- Вкладка Задачи без даты -->
+        <div class="tab-content" id="backlog-tab">
+            <div class="backlog-header">
+                <h2>Задачи без даты</h2>
+                <button id="addBacklogBtn" class="btn-primary">+ Добавить задачу</button>
+            </div>
+            <div id="backlogList"></div>
         </div>
 
         <!-- Модальное окно для настроек -->
@@ -112,6 +145,56 @@
 
                     <div class="form-actions">
                         <button type="button" id="cancelBtn" class="btn-secondary">Отмена</button>
+                        <button type="submit" class="btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно для добавления привычки -->
+        <div id="habitModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="habitClose">&times;</span>
+                <h2>Добавить привычку</h2>
+                
+                <form id="habitForm">
+                    <div class="form-group">
+                        <label for="habitTitle">Название привычки</label>
+                        <input type="text" id="habitTitle" placeholder="Например: Выпить 2л воды" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="habitGoal">Цель (необязательно)</label>
+                        <input type="text" id="habitGoal" placeholder="Например: 30 дней подряд">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="habitCancelBtn" class="btn-secondary">Отмена</button>
+                        <button type="submit" class="btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно для добавления задачи без даты -->
+        <div id="backlogModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="backlogClose">&times;</span>
+                <h2>Добавить задачу</h2>
+                
+                <form id="backlogForm">
+                    <div class="form-group">
+                        <label for="backlogTitle">Название задачи</label>
+                        <input type="text" id="backlogTitle" placeholder="Что нужно сделать?" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="backlogDescription">Описание (необязательно)</label>
+                        <textarea id="backlogDescription" placeholder="Дополнительные детали" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="backlogCancelBtn" class="btn-secondary">Отмена</button>
                         <button type="submit" class="btn-primary">Добавить</button>
                     </div>
                 </form>
